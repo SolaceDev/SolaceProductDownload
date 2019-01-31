@@ -1,4 +1,7 @@
 #!/bin/bash
+##
+# TODO: Copyright, License..
+##
 
 ## Exit on errors.
 set -e
@@ -7,7 +10,7 @@ set -e
 ### 
 #
 #
-# A Basic scripting to do Solace products downloads that handles:
+# Basic scripting to download licensed Solace products:
 #
 # - Authentication
 # - Accepting of Solace License Agreement
@@ -44,6 +47,21 @@ function downloadCleanup {
   fi
 }
 trap downloadCleanup EXIT INT TERM HUP
+
+function checkRequiredVariables() {
+ local found_missing=0
+ local missing_list
+ for V in $@; do
+    if [ -z "${!V}" ]; then
+        found_missing=1
+        missing_list="$missing_list $V"
+    fi
+ done
+ if [ "$found_missing" -eq "1" ]; then
+    echo "Required variable(s) where missing [ $missing_list ]"
+    exit 1
+ fi
+}
 
 function authenticateAndAcceptSolaceLicenseAgreement() {
  printf "Authenticating as user\t\t\t%s\n" $SOLACE_USER
@@ -161,6 +179,9 @@ if [ ! -z $CHECKSUM_FILE ] && [ -f $CHECKSUM_FILE ]; then
      export CHECKSUM_CMD=$SHA256SUM_CMD
    fi
 fi
+
+## A final check for all required variables.
+checkRequiredVariables "SOLACE_USER SOLACE_USER_PASSWORD DOWNLOAD_FILE_PATH ACCEPT_LICENSE"
 
 authenticateAndAcceptSolaceLicenseAgreement $SOLACE_USER $SOLACE_USER_PASSWORD
 downloadProduct $SOLACE_PRODUCTS_PDF_LICENSE_URL
