@@ -3,9 +3,6 @@
 # TODO: Copyright, License..
 ##
 
-## Exit on errors.
-set -e
-
 #
 ### 
 #
@@ -23,8 +20,16 @@ set -e
 #
 ###
 
+## Exit on errors.
+set -e
+
+## Required tools list for a basic check.
+REQUIRED_TOOLS=${REQUIRED_TOOLS:-"curl awk basename dirname pwd grep printf which mktemp"}
+
+
 export SCRIPT="$( basename "${BASH_SOURCE[0]}" )"
 export SCRIPTPATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 
 export SOLACE_PRODUCTS_FORM_URL="https://products.solace.com/#"
 export SOLACE_PRODUCTS_DOWNLOAD_URL="https://products.solace.com/"
@@ -47,6 +52,17 @@ function downloadCleanup {
   fi
 }
 trap downloadCleanup EXIT INT TERM HUP
+
+
+function checkRequiredTools() {
+ for REQUIRED_TOOL in $@; do
+  which $REQUIRED_TOOL > /dev/null || {
+        echo "ERROR: '$REQUIRED_TOOL' was not found. Please install it."
+        exit 1
+  }
+ done
+}
+
 
 function checkRequiredVariables() {
  local found_missing=0
@@ -75,8 +91,18 @@ function authenticateAndAcceptSolaceLicenseAgreement() {
 function downloadProduct() {
   PRODUCT_PATH=$1
   PRODUCT_FILE=$( basename $PRODUCT_PATH )
+  printf "Downloading\t\t\t\t%s\n" "$PRODUCT_PATH"
   export DOWNLOAD_RESPONSE=$( curl -s -w '%{http_code}' -X GET  -b cookies.txt $SOLACE_PRODUCTS_DOWNLOAD_URL/$PRODUCT_PATH -o $PRODUCT_FILE )
-  printf "Downloaded\t\t\t\t%s\n" $PRODUCT_FILE
+  ## check for a login redirect, hence a failed login, the downloaded file will be the login form..
+  REDIRECTED_COUNT=$( grep "location" $PRODUCT_FILE | grep "$PRODUCT_FILE" | wc -l )
+  if [ "$REDIRECTED_COUNT" -eq "0" ]; then
+    printf "Download %s\t\t\t\t%s\n" "OK" "$PRODUCT_FILE"
+  else
+    printf "Download %s\t\t\t\t%s\n" "FAILED" "Detected a redirect to login... please check the username and password."
+    rm -f $PRODUCT_FILE
+    exit 1
+  fi
+  
 } 
 
 function validateChecksum() {
@@ -117,6 +143,7 @@ function showUsageAndExit() {
   exit 1
 }
 
+checkRequiredTools $REQUIRED_TOOLS
 
 while getopts "u:p:d:c:ah" arg; do
     case "${arg}" in
