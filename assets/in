@@ -1,3 +1,56 @@
-echo $1
+#!/bin/bash
 
+set -e
 
+LOG="/var/log/in.log"
+
+echo "Solace Product Download" >&2
+PAYLOAD=$(mktemp /tmp/resource-check.XXXXXX)
+
+cat > "$PAYLOAD" <&0
+
+username=$(jq -r '.source.username // ""' < $PAYLOAD)
+password=$(jq -r '.source.password // ""' < $PAYLOAD)
+accept=$(jq -r '.source.accept_terms // "false"' < $PAYLOAD)
+filepath=$(jq -r '.source.filepath // ""' < $PAYLOAD)
+targetdir=$1
+
+if [ -z $username ]; then
+  echo "Solace Product username must be specified in source block. 'username: <username>'" >&2
+  echo "{}"
+  exit 1
+fi
+
+if [ -z $password ]; then
+  echo "Solace Product password must be specified in source block. 'password: <password>'" >&2
+  echo "{}"
+  exit 1
+fi
+
+if [ -z $filepath ]; then
+  echo "File path must be specified in source block. 'filepath: <path>'" >&2
+  echo "{}"
+  exit 1
+fi
+
+FLAGS="-u $username -p $password -d $filepath"
+
+echo "Acceptance of terms: $accept" >&2
+
+if [ "$accept" == "true" ]; then
+  FLAGS="$FLAGS -a"
+else
+  echo "Accepting the Solace License Agreement is required to download products from solace. Please add 'accept_terms: true' to the resource 'source' section." >&2
+  echo "{}"
+  exit 1
+fi
+
+echo "Downloading $filepath, will be placed in $targetdir" >&2
+
+/opt/resource/downloadLicensedSolaceProduct.sh $FLAGS >&2
+
+mv *.pdf $targetdir
+mv *.pivotal $targetdir
+ls $targetdir >&2
+
+echo "{\"version\": {\"filepath\":\"$filepath\"}, \"metadata\":[]}"

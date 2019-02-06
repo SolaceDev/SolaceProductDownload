@@ -1,1 +1,20 @@
-echo "Hello World"
+#!/bin/bash
+
+set -e
+
+echo "Checking version of Solace Product Download resource" >&2
+PAYLOAD=$(mktemp /tmp/resource-check.XXXXXX)
+
+cat > "$PAYLOAD" <&0
+
+last_checksum=$(jq -r '.version.checksum // ""' < $PAYLOAD)
+current_checksum=$(/usr/bin/sha256sum $PAYLOAD | awk '{ print $1 }')
+
+echo "Last checksum $last-checksum, current checksum $current_checksum" >&2
+
+if [ "$current_checksum" == "$last_checksum" ]; then
+  echo '[]' >&3
+else
+  echo "[{\"checksum\":\"$current_checksum\"}]"
+fi
+
