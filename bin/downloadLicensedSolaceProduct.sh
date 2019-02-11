@@ -32,8 +32,8 @@ export SCRIPTPATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 
 export SOLACE_PRODUCTS_FORM_URL="https://products.solace.com/#"
-export SOLACE_PRODUCTS_DOWNLOAD_URL="https://products.solace.com/"
-export SOLACE_PRODUCTS_PDF_LICENSE_URL="$SOLACE_PRODUCTS_DOWNLOAD_URL/Solace-Systems-Software-License-Agreement.pdf"
+export SOLACE_PRODUCTS_DOWNLOAD_URL="https://products.solace.com"
+export SOLACE_PRODUCTS_PDF_LICENSE_URL="/Solace-Systems-Software-License-Agreement.pdf"
 export SOLACE_PRODUCTS_HTML_LICENSE_URL="http://www.solace.com/license-software"
 export COOKIES_FILE=${COOKIES_FILE:-"cookies.txt"}
 
@@ -96,6 +96,11 @@ function downloadProduct() {
   ## check for a login redirect, hence a failed login, the downloaded file will be the login form..
   REDIRECTED_COUNT=$( grep "location" $PRODUCT_FILE | grep "$PRODUCT_FILE" | wc -l )
   if [ "$REDIRECTED_COUNT" -eq "0" ]; then
+    if [ "$(cat $PRODUCT_FILE | grep 'Cannot access' | wc -l)" -gt "0" ]; then
+      printf "Download %s\t\t\t\t%s\n" "FAILED" "Detected missing file $SOLACE_PRODUCTS_DOWNLOAD_URL/$PRODUCT_PATH... please check the file exists."
+      rm -f $PRODUCT_FILE
+      exit 1
+    fi
     printf "Download %s\t\t\t\t%s\n" "OK" "$PRODUCT_FILE"
   else
     printf "Download %s\t\t\t\t%s\n" "FAILED" "Detected a redirect to login... please check the username and password."
