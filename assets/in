@@ -33,6 +33,14 @@ if [ -z "$PASSWORD" ]; then
   exit 1
 fi
 
+log "Acceptance of terms: $ACCEPT"
+
+if [ "$ACCEPT_TERMS" != "true" ]; then
+  log "Accepting the Solace License Agreement is required to download products from solace. Please add 'accept_terms: true' to the resource 'source' section."
+  echo "{}"
+  exit 1
+fi
+
 if [ ! -z "$PIVNET_REFRESH_TOKEN" ]; then
   log "Pivnet refresh token provided, discovering latest version from Pivnet"
   log
@@ -62,17 +70,7 @@ if [ -z "$FILEPATH" ]; then
   exit 1
 fi
 
-export FLAGS="-u $USERNAME -p $PASSWORD -d $FILEPATH"
-
-log "Acceptance of terms: $ACCEPT"
-
-if [ "$ACCEPT_TERMS" == "true" ]; then
-  export FLAGS="$FLAGS -a"
-else
-  log "Accepting the Solace License Agreement is required to download products from solace. Please add 'accept_terms: true' to the resource 'source' section."
-  echo "{}"
-  exit 1
-fi
+export FLAGS="-u $USERNAME -p $PASSWORD -d $FILEPATH -a"
 
 if [ ! -z "$CHECKSUM_FILE" ]; then
   FLAGS="$FLAGS -c $CHECKSUM_FILE"
