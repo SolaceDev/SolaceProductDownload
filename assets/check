@@ -2,19 +2,29 @@
 
 set -e
 
-echo "Checking version of Solace Product Download resource" >&2
-PAYLOAD=$(mktemp /tmp/resource-check.XXXXXX)
+source /opt/resource/common.sh
 
-cat > "$PAYLOAD" <&0
+log "Checking version of Solace Product Download resource"
 
-last_checksum=$(jq -r '.version.checksum // ""' < $PAYLOAD)
+readPayload
+
 current_checksum=$(/usr/bin/sha256sum $PAYLOAD | awk '{ print $1 }')
+last_checksum=$(getPayloadProperty ".version.config_checksum")
 
-echo "Last checksum $last-checksum, current checksum $current_checksum" >&2
+log "Last checksum $last_checksum, current checksum $current_checksum"
 
-if [ "$current_checksum" == "$last_checksum" ]; then
-  echo '[]' >&3
+token=$(getPayloadProperty ".source.pivnet_token")
+if [ ! -z "$token" ]; then
+  last_version=$(jq -r '.version.pubsub_release_id // ""' < $PAYLOAD)
+  getPubsubReleaseVersion
+
+  log "Last pubsub version id $last_version, current pubsub version id $current_version"
+fi
+
+if [ "$current_checksum" == "$last_checksum" ] && [ -z $PUBSUB_PIVNET_VERSION_ID -o "$PUBSUB_PIVNET_VERSION_ID" == "$last_version" ]; then
+  echo '[]'
 else
-  echo "[{\"checksum\":\"$current_checksum\"}]"
+  version=${PUBSUB_PIVNET_VERSION_ID:-""}
+  echo "[{\"config_checksum\":\"$current_checksum\",\"pubsub_version_id\":\"$version\"}]"
 fi
 
