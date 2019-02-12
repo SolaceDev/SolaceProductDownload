@@ -1,5 +1,5 @@
 # Solace Product Download
-A project that supports automation for downloading products from Solace Products (https://products.solace.com). It does so by providing an implementation of a Concourse resource to perform this download.
+A project that supports automation for downloading Solace Products from (https://products.solace.com). It does so by providing an implementation of a Concourse resource to perform this download.
 ## Contents
 * [Overview](#overview)
 * [Concourse Configurations](#concourse-configurations)
@@ -12,8 +12,9 @@ A project that supports automation for downloading products from Solace Products
 ---
 ## Overview
 The SolaceProductDownload implements a Concourse resource. The resource facilitates calling the [downloadLicensedSolaceProduct](bin/downloadLicensedSolaceProduct.sh) script used to download products from Solace. The script can download any product from the [Solace Products domain](https://products.solace.com/).
+
 ## Concourse Configurations
-SolaceProductDownload can be added to a Concourse pipeline yaml. There are a couple of possible configurations supported.
+SolaceProductDownload can be added to a Concourse pipeline yaml. There are a couple of possible supported configurations.
 #### Direct download
 ```
 resource_types:
@@ -42,7 +43,7 @@ jobs:
       - name: solace-tile
   [...]
 ```
-This will create a resourc called `solace-tile` of type `solace-product-download` which is given a path to download the given resource from https://products.solace.com/ as well as Solace product credentials. Furthermore, the accept_terms flag is required to accept the Solace Systems Software License Aggrement found [here](https://products.solace.com/Solace-Systems-Software-License-Agreement.pdf).
+This will create a resource called `solace-tile` of type `solace-product-download` which is given a filepath relative to https://products.solace.com/ as well as Solace product credentials. Furthermore, the accept_terms flag is required to accept the Solace Systems Software License Agreement found [here](https://products.solace.com/Solace-Systems-Software-License-Agreement.pdf). The Software License Agreement will also be part of the download in addition to the requested filepath.
 
 #### Pivnet Download
 ```
@@ -71,7 +72,9 @@ jobs:
       - name: solace-tile
   [...]
 ```
-This configuration, instead of downloading a specific product file, will download the latest product as specified by the checksum on the Pivotal Network page for Solace Pubsub+ (https://network.pivotal.io/products/solace-pubsub). This checksum will be interpreted to download the corresponding product from Solace products. Furthermore, the resulting file will be verified using this checksum. Lastly, in addition to agreeing to the Solace Systems Software License Agreement, the accept_terms flag also signifies the user's acceptance of the EULA of Solace Pubsub+ on Pivnet found [here](https://network.pivotal.io/legal_document_agreements/686270) which is required to download the checksum.
+This configuration, instead of downloading a specific product file based on filepath, will download the latest Solace PubSub+ Enterprise for PCF. This configuration requires a `pivnet_token` as your PivNet credentials in addition to the [Solace products](https://products.solace.com/) credentials.
+With this configuration the `solace-tile` resource will download a checksum file from Pivotal Network Solace Pubsub+ (https://network.pivotal.io/products/solace-pubsub).
+The checksum file will be interpreted to download the corresponding product from [Solace products](https://products.solace.com/), the downloaded file will be verified using this checksum. Using the configuration implies user's acceptance of the Solace Systems Software License Agreement, the accept_terms flag also implies the user's acceptance of the EULA of Solace Pubsub+ on Pivnet found [here](https://network.pivotal.io/legal_document_agreements/686270) which is required to download from PivNet.
 
 ## Standalone Script
 The [downloadLicensedSolaceProduct](bin/downloadLicensedSolaceProduct.sh) script can be used standalone to automate the download of products from solace. An invocation of the script is as follows
