@@ -59,7 +59,7 @@ resource:
   source:
     username: "solace-product-username"
     password: "solace-product-password"
-    pivnet_token: "<my pivnet token>" # Pivotal Network UAA token found in Settingss
+    pivnet_token: "<my pivnet token>" # Pivotal Network UAA token found in Settings
     accept_terms: true
   [...]
 jobs:
