@@ -1,8 +1,4 @@
 #!/bin/bash
-##
-# TODO: Copyright, License..
-##
-
 #
 ### 
 #
