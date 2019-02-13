@@ -47,7 +47,7 @@ jobs:
 ```
 This will create a resource called `solace-tile` of type `solace-product-download` which is given a filepath relative to https://products.solace.com/ as well as Solace product credentials. Furthermore, the accept_terms flag is required to accept the Solace Systems Software License Agreement found [here](https://products.solace.com/Solace-Systems-Software-License-Agreement.pdf). The Software License Agreement will also be part of the download in addition to the requested filepath.
 
-#### Pivnet Download
+#### Solace PubSub+ for PCF Download
 ```
 - name: solace-product-download
   type: docker-image
