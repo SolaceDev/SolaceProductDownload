@@ -1,3 +1,7 @@
+
+export SHA256SUM_CMD=$( which sha256sum || which gsha256sum )
+export MD5SUM_CMD=$( which md5sum || which gmd5sum )
+
 function testDownloadWithMissingLicense() {
   echo "Testing download with missing license"
   failed_dl=$(./downloadLicensedSolaceProduct.sh -u someaccount -p somepassword -d /products/2.2GA/PCF/Current/2.2.1/documentation.html | grep "Accepting the Solace License Agreement is required" | wc -l)
@@ -49,7 +53,7 @@ function testCheckScriptChecksum() {
   tmpfile=$(mktemp)
   echo $input > $tmpfile
   output=$(./check 2> /dev/null < $tmpfile)
-  expected_checksum=$(/usr/bin/sha256sum $tmpfile | awk '{ print $1 }')
+  expected_checksum=$( $SHA256SUM_CMD $tmpfile | awk '{ print $1 }')
   actual_checksum=$(echo "$output" | jq -r '.[0].config_checksum // ""')
   if [ ! "$expected_checksum" == "$actual_checksum" ]; then
     echo "Checksum did not match expected! Expected $expected_checksum got $actual_checksum"
