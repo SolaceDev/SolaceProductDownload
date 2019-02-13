@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This file is included by the in/check scripts in assets. It contains a variety of general
+# use functions between the two files.
+
 export PUBSUB_PIVNET_URL="https://network.pivotal.io/api/v2/products/solace-pubsub/releases"
 export PUBSUB_PIVNET_LATEST="$PUBSUB_PIVNET_URL/latest"
 
