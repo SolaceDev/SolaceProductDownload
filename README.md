@@ -88,12 +88,11 @@ The username (-u) and password (-p) are credentials for https://product.solace.c
 ## Development
 The project can be built locally by calling
 ```
-sudo docker build . -t solace/solace-product-download
+./build.sh -l
 ```
 To iterate, this can be pushed to a local or private docker registry. See [Deploying a Registry Server](https://docs.docker.com/registry/deploying/) for more information on local docker registrys.
 ```
-sudo docker tag solace/solace-product-download my.local.docker:port/solace-product-download
-sudo docker push my.local.docker:port/solace-product-download
+./build.sh -r <local docker registry> [-u <username> -p <password>]
 ```
 If using an insecure docker registry, a Concourse pipeline can be configured as follows to find the development version of solace-product-download
 ```
