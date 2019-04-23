@@ -60,7 +60,28 @@ function downloadChecksumFromPivnet() {
   pubsub_checksum_url="$pubsub_pivnet_product_url/$pubsub_checksum_id/download"
 
   log "Discovered checksum url $pubsub_checksum_url"
-  curl -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $PIVNET_ACCESS_TOKEN" -sL $pubsub_checksum_url -o $CHECKSUM_FILE
+  PRODUCT_RESPONSE=$(curl -w '%{http_code}' -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $PIVNET_ACCESS_TOKEN" -sL $pubsub_checksum_url -o $CHECKSUM_FILE)
+
+  if [ "$PRODUCT_RESPONSE" -eq "200" ]; then
+    # Nothing to do, all is well.
+    true
+  elif [ "$PRODUCT_RESPONSE" -eq "401" ]; then
+    echo The user could not be authenticated.
+    exit 1
+  elif [ "$PRODUCT_RESPONSE" -eq "403" ]; then
+    echo The user does not have access to download files from this release.
+    exit 1
+  elif [ "$PRODUCT_RESPONSE" -eq "404" ]; then
+    echo The product or release cannot be found.
+    exit 1
+  elif [ "$PRODUCT_RESPONSE" -eq "451" ]; then
+    echo The user has not accepted the current EULA for this release.
+    exit 1
+  else
+    echo "Unexpected response from the checksum url: $PRODUCT_RESPONSE"
+    exit 1
+  fi
+
 }
 
 function parseChecksum() {
