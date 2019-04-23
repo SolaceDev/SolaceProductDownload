@@ -66,19 +66,19 @@ function downloadChecksumFromPivnet() {
     # Nothing to do, all is well.
     true
   elif [ "$PRODUCT_RESPONSE" -eq "401" ]; then
-    echo The user could not be authenticated.
+    log "The user could not be authenticated."
     exit 1
   elif [ "$PRODUCT_RESPONSE" -eq "403" ]; then
-    echo The user does not have access to download files from this release.
+    log "The user does not have access to download files from this release."
     exit 1
   elif [ "$PRODUCT_RESPONSE" -eq "404" ]; then
-    echo The product or release cannot be found.
+    log "The product or release cannot be found."
     exit 1
   elif [ "$PRODUCT_RESPONSE" -eq "451" ]; then
-    echo The user has not accepted the current EULA for this release.
+    log "The user has not accepted the current EULA for this release. Please log in to PivNet and accept the license agreement."
     exit 1
   else
-    echo "Unexpected response from the checksum url: $PRODUCT_RESPONSE"
+    log "Unexpected response from the checksum url: $PRODUCT_RESPONSE"
     exit 1
   fi
 
