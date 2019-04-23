@@ -43,18 +43,6 @@ function getPivnetRefreshToken() {
   fi
 }
 
-function acceptPivnetEula() {
-  if [ -z "$PIVNET_HEADERS" ]; then
-    getPivnetRefreshToken
-  fi
-  eula_url="$1/eula_acceptance"
-  eula="$(eval curl $PIVNET_HEADERS -s -w '%{http_code}' -o /dev/null -X POST $eula_url)"
-  if [ "$eula" != "200" ]; then
-    log "Failed to accept EULA for $eula_url. Got $eula, expected 200"
-    exit 1
-  fi
-}
-
 function downloadChecksumFromPivnet() {
   export CHECKSUM_FILE=$(mktemp)
 
@@ -70,8 +58,6 @@ function downloadChecksumFromPivnet() {
   pubsub_pivnet_product_url="$pubsub_pivnet_version_url/product_files"
   pubsub_checksum_id="$(curl -s $pubsub_pivnet_product_url | jq -r '.product_files[] | select(.name | contains("Checksum")) | .id')"
   pubsub_checksum_url="$pubsub_pivnet_product_url/$pubsub_checksum_id/download"
-
-  acceptPivnetEula $pubsub_pivnet_version_url
 
   log "Discovered checksum url $pubsub_checksum_url"
   curl -H "Accept: application/json" -H "Content-Type: application/json" -H "Authorization: Bearer $PIVNET_ACCESS_TOKEN" -sL $pubsub_checksum_url -o $CHECKSUM_FILE
