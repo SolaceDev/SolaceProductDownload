@@ -52,18 +52,22 @@ function downloadChecksumFromPivnet() {
 }
 
 function getReleaseFolder() {
-  version="$1"
-  majorMinor="$(echo $version | cut -d \. -f 1-2)."
-  patch="$(echo $version | sed "s/$majorMinor//g")"
-  patches=($(pivnet releases -p solace-pubsub --format json | jq -r ".[].version" | grep "$majorMinor" | grep -v "$version" | sed "s/$majorMinor//g"))
-  export PUBSUB_FOLDER="Current"
-  for (( i = 0; i < ${#patches[@]}; i++ )); do
-    if [ "${patches[$i]}" -gt "$patch" ]; then
-      log "Found newer patch on Pivnet than specified version, product file will be in Archive directory"
-      export PUBSUB_FOLDER="Archive"
-      break
-    fi
-  done
+  if [ ! -z "$(getPayloadProperty ".source.pivnet_token")" ]; then
+    version="$1"
+    majorMinor="$(echo $version | cut -d \. -f 1-2)."
+    patch="$(echo $version | sed "s/$majorMinor//g")"
+    patches=($(pivnet releases -p solace-pubsub --format json | jq -r ".[].version" | grep "$majorMinor" | grep -v "$version" | sed "s/$majorMinor//g"))
+    export PUBSUB_FOLDER="Current"
+    for (( i = 0; i < ${#patches[@]}; i++ )); do
+      if [ "${patches[$i]}" -gt "$patch" ]; then
+        log "Found newer patch on Pivnet than specified version, product file will be in Archive directory"
+        export PUBSUB_FOLDER="Archive"
+        break
+      fi
+    done
+  else
+    export PUBSUB_FOLDER="Current"
+  fi
 }
 
 function parseChecksum() {
