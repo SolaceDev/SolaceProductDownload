@@ -5,7 +5,7 @@
 
 function log() {
   echo $1 >&2
-  echo $1 >> "/var/log/test.log"
+  echo $1 >> "/var/log/solace-product-download.log"
 }
 
 function readPayload() {
